@@ -1,3 +1,14 @@
+
+// chrome.commands.onCommand.addListener((command) => {
+//     if (command === "summarize") {
+//         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+//             if (tabs[0].id) {
+//                 chrome.tabs.sendMessage(tabs[0].id, { action: "summarize" });
+//             }
+//         });
+//     }
+// });
+
 // Listen for messages from background
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === "summarize") {
@@ -43,18 +54,16 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                 document.removeEventListener('click', handleClickOutside);
             }
 
-            // Retrieve the OpenAI API key from storage
-            chrome.storage.local.get(['openaiApiKey'], function (result) {
+            // Retrieve the OpenAI API key and system prompt from storage
+            chrome.storage.local.get(['openaiApiKey', 'systemPrompt'], function (result) {
                 const apiKey = result.openaiApiKey;
+                const systemPrompt = result.systemPrompt || "You are a helpful assistant that summarizes text in two sentences.";
                 if (!apiKey) {
                     alert('OpenAI API key is not set. Please set it in the extension popup.');
                     popup.remove();
                     removeClickListener();
                     return;
                 }
-
-                // Define the system prompt to limit the response to two sentences
-                const systemPrompt = "You are a helpful assistant that summarizes text in two sentences.";
 
                 // Prepare the payload for OpenAI API with streaming enabled
                 const payload = {
@@ -63,7 +72,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                         { role: "system", content: systemPrompt },
                         { role: "user", content: selectedText }
                     ],
-                    max_tokens: 100,
+                    max_tokens: 4096,
                     temperature: 0.5,
                     stream: true
                 };
