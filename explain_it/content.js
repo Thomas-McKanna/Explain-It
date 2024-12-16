@@ -1,5 +1,6 @@
 
     
+        
 // Listen for messages from background
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === "summarize") {
@@ -15,17 +16,29 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                         popup.id = 'summarize-popup';
                         popup.innerHTML = html;
                         document.body.appendChild(popup);
-        
+
                         // Add event listener to close button
                         document.getElementById('close-popup').addEventListener('click', function () {
                             popup.remove();
                             removeClickListener();
                         });
-        
+
+                        // Add event listener to copy markdown button
+                        document.getElementById('copy-markdown').addEventListener('click', function () {
+                            const summaryMarkdown = popup.getAttribute('data-summary');
+                            if (summaryMarkdown) {
+                                navigator.clipboard.writeText(summaryMarkdown).then(() => {
+                                    alert('Summary copied to clipboard!');
+                                }).catch(err => {
+                                    console.error('Failed to copy summary: ', err);
+                                });
+                            }
+                        });
+
                         // Add event listener to close popup when clicking outside
                         document.addEventListener('click', handleClickOutside);
                     }
-        
+
                     // Function to handle clicks outside the popup
                     function handleClickOutside(event) {
                         if (!popup.contains(event.target)) {
@@ -33,15 +46,15 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                             removeClickListener();
                         }
                     }
-        
+
                     // Function to remove the outside click listener
                     function removeClickListener() {
                         document.removeEventListener('click', handleClickOutside);
                     }
-        
+
                     // Set the loading message
                     popup.querySelector('.popup-content').innerHTML = `<p>Loading...</p>`;
-        
+
                     // Retrieve the OpenAI API key and system prompt from storage
                     chrome.storage.local.get(['openaiApiKey', 'systemPrompt'], function (result) {
                         const apiKey = result.openaiApiKey;
@@ -52,7 +65,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                             removeClickListener();
                             return;
                         }
-        
+
                         // Prepare the payload for OpenAI API with streaming enabled
                         const payload = {
                             model: "gpt-4",
@@ -64,7 +77,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                             temperature: 0.5,
                             stream: true
                         };
-        
+
                         // Make the API request to OpenAI with streaming
                         fetch('https://api.openai.com/v1/chat/completions', {
                             method: 'POST',
@@ -81,13 +94,15 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                                 const reader = response.body.getReader();
                                 const decoder = new TextDecoder('utf-8');
                                 let summary = '';
-        
+
                                 function readStream() {
                                     return reader.read().then(({ done, value }) => {
                                         if (done) {
                                             if (summary === '') {
                                                 popup.querySelector('.popup-content').innerHTML = '<p>No summary received.</p>';
                                             }
+                                            // Store the summary in a data attribute for copying
+                                            popup.setAttribute('data-summary', summary);
                                             return;
                                         }
                                         const chunk = decoder.decode(value, { stream: true });
@@ -97,6 +112,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                                             if (line.startsWith('data: ')) {
                                                 const data = line.replace('data: ', '');
                                                 if (data === '[DONE]') {
+                                                    // Store the summary in a data attribute for copying
+                                                    popup.setAttribute('data-summary', summary);
                                                     return;
                                                 }
                                                 try {
@@ -115,7 +132,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                                         return readStream();
                                     });
                                 }
-        
+
                                 return readStream();
                             })
                             .catch(error => {
