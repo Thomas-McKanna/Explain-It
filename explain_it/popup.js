@@ -1,24 +1,46 @@
-document.getElementById("summarize").addEventListener("click", async () => {
-    const textToSummarize = document.getElementById("inputText").value;
 
-    if (!('ai' in self && 'summarizer' in self.ai)) {
-        document.getElementById("outputSummary").textContent = "Summarizer API is not supported in this browser.";
-        return;
-    }
+document.addEventListener('DOMContentLoaded', function () {
+    const apiKeyInput = document.getElementById('apiKey');
+    const systemPromptInput = document.getElementById('systemPrompt');
+    const saveButton = document.getElementById('saveSettings');
+    const statusDiv = document.getElementById('status');
+    const errorDiv = document.getElementById('error');
 
-    const options = {
-        sharedContext: "General",
-        type: "key-points",
-        format: "plain-text",
-        length: "medium"
-    };
+    // Load the API key and system prompt from storage
+    chrome.storage.local.get(['openaiApiKey', 'systemPrompt'], function (result) {
+        if (result.openaiApiKey) {
+            apiKeyInput.value = result.openaiApiKey;
+        }
+        if (result.systemPrompt) {
+            systemPromptInput.value = result.systemPrompt;
+        }
+    });
 
-    const capabilities = await self.ai.summarizer.capabilities();
-    if (capabilities.available === 'readily') {
-        const summarizer = await self.ai.summarizer.create(options);
-        const summary = await summarizer.summarize(textToSummarize);
-        document.getElementById("outputSummary").textContent = summary;
-    } else {
-        document.getElementById("outputSummary").textContent = "Summarizer model is not ready yet.";
-    }
+    // Save the API key and system prompt to storage
+    saveButton.addEventListener('click', function () {
+        const apiKey = apiKeyInput.value.trim();
+        const systemPrompt = systemPromptInput.value.trim();
+
+        if (!apiKey) {
+            errorDiv.textContent = 'API key cannot be empty.';
+            statusDiv.textContent = '';
+            return;
+        }
+
+        if (!systemPrompt) {
+            errorDiv.textContent = 'System prompt cannot be empty.';
+            statusDiv.textContent = '';
+            return;
+        }
+
+        chrome.storage.local.set({ 'openaiApiKey': apiKey, 'systemPrompt': systemPrompt }, function () {
+            if (chrome.runtime.lastError) {
+                errorDiv.textContent = 'Error saving settings: ' + chrome.runtime.lastError.message;
+                statusDiv.textContent = '';
+            } else {
+                statusDiv.textContent = 'Settings saved successfully.';
+                errorDiv.textContent = '';
+            }
+        });
+    });
 });

@@ -1,12 +1,10 @@
-console.log("Background script running!");
 
-chrome.runtime.onInstalled.addListener(() => {
-  console.log("Extension installed!");
-});
-
-chrome.action.onClicked.addListener((tab) => {
-  chrome.scripting.executeScript({
-    target: { tabId: tab.id },
-    files: ['content.js']
-  });
+chrome.commands.onCommand.addListener((command) => {
+  if (command === "summarize") {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (tabs[0].id) {
+        chrome.tabs.sendMessage(tabs[0].id, { action: "summarize" });
+      }
+    });
+  }
 });

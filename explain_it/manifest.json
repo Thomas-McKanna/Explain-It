@@ -1,15 +1,46 @@
-{
-  "manifest_version": 3,
-  "name": "Explain It",
-  "version": "0.1",
-  "description": "Summarize selected text",
-  "key": "AsAgA68sj4csOw2cdoUXgP/0v8j8w9hPdsKnRBN4yyr/XW1SbcVj/0mm7LJpsjpvDgZEdoPy+lwRUXxXTBgC4AMAAABzeyJvcmlnaW4iOiJjaHJvbWUtZXh0ZW5zaW9uOi8vam5nb2VlZ25obGVvbWxvbmRlcGNsYmZjbGJscGJpYW4iLCJmZWF0dXJlIjoiQUlTdW1tYXJpemF0aW9uQVBJIiwiZXhwaXJ5IjoxNzUzMTQyNDAwfQ==",
-  "permissions": [],
-  "action": {
-    "default_popup": "popup.html",
-    "default_icon": "icon.png"
-  },
-  "background": {
-    "service_worker": "background.js"
-  }
-}
+
+    
+    {
+      "manifest_version": 3,
+      "name": "Explain It",
+      "version": "0.4",
+      "description": "Summarize selected text using OpenAI API",
+      "permissions": [
+        "activeTab",
+        "scripting",
+        "storage"
+      ],
+      "host_permissions": [
+        "https://api.openai.com/*"
+      ],
+      "action": {
+        "default_popup": "popup.html",
+        "default_icon": "icon.png"
+      },
+      "background": {
+        "service_worker": "background.js"
+      },
+      "content_scripts": [
+        {
+          "matches": [
+            "<all_urls>"
+          ],
+          "js": [
+            "content.js"
+          ]
+        }
+      ],
+      "commands": {
+        "summarize": {
+          "suggested_key": {
+            "default": "Ctrl+Shift+S",
+            "mac": "Command+Shift+S"
+          },
+          "description": "Summarize highlighted text"
+        }
+      },
+      "icons": {
+        "128": "icon.png"
+      }
+    }
+    
