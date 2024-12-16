@@ -1,4 +1,3 @@
-
 <html>
 <head>
   <title>Explain It - Settings</title>
@@ -80,6 +79,85 @@
       color: #dc3545;
       font-weight: 500;
     }
+
+    /* New Styles for the Summarize Popup */
+    #summarize-popup {
+      width: 80%;
+      max-width: 600px;
+      border-radius: 8px;
+      font-size: 1em;
+    }
+
+    .popup-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #e0e0e0;
+      padding-bottom: 10px;
+      margin-bottom: 10px;
+    }
+
+    .popup-header h2 {
+      margin: 0;
+      font-size: 1.5em;
+      color: #333;
+    }
+
+    #close-popup {
+      background: none;
+      border: none;
+      font-size: 1.5em;
+      cursor: pointer;
+      color: #999;
+      transition: color 0.3s;
+    }
+
+    #close-popup:hover {
+      color: #333;
+    }
+
+    .popup-content {
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    /* Markdown Styling */
+    .popup-content h1,
+    .popup-content h2,
+    .popup-content h3,
+    .popup-content h4,
+    .popup-content h5,
+    .popup-content h6 {
+      color: #4A90E2;
+    }
+
+    .popup-content p {
+      line-height: 1.6;
+      color: #555555;
+    }
+
+    .popup-content a {
+      color: #4A90E2;
+      text-decoration: none;
+    }
+
+    .popup-content a:hover {
+      text-decoration: underline;
+    }
+
+    .popup-content code {
+      background-color: #f5f5f5;
+      padding: 2px 4px;
+      border-radius: 4px;
+      font-family: monospace;
+    }
+
+    .popup-content pre {
+      background-color: #f5f5f5;
+      padding: 10px;
+      border-radius: 4px;
+      overflow-x: auto;
+    }
   </style>
 </head>
 <body>
@@ -94,5 +172,6 @@
     <div id="error"></div>
   </div>
   <script src="popup.js" defer></script>
+  <script src="marked.min.js" defer></script>
 </body>
 </html>
